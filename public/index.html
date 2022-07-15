@@ -1,0 +1,85 @@
+<html>
+    <head>
+        <script src="./vue-2.6.12.js"></script>
+        <script src="./axios.min.js"></script>
+        <title>
+                table format
+        </title>
+        <style>
+            .link {
+                cursor: pointer;
+                color: blue;
+            }
+        </style>
+    </head>
+<body>
+    <div id="vue-app">
+            Name: <input v-model="model.name"/>
+            Completed: <input type="checkbox"  v-model="model.isCompleted" />
+            <button @click="pleaseAdd()">Save Data</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Completed?</th>
+                    <th>Delete</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr v-for="item,i in list" :key="i">
+                    <td>{{item.name}}</td>
+                    <td><input type="checkbox" v-model="item.isCompleted" @change="updatedAt(item)" />{{item.isCompleted}}</td>
+                    <td>
+                        <a class="link" @click="pleaseDelete(item._id)">Delete</a>
+                    </td>
+                </tr>
+                <tr v-if="list.length == 0">
+                    <td colspan="3">No Record Added</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</body>
+<script>
+    var jk = new Vue({
+            el: '#vue-app',
+            data: {
+                model: {
+                    name: "",
+                    isCompleted: false,
+                },
+                list: [
+                ]
+            },
+            methods: {
+                pleaseAdd: async function() {
+                    var response= await axios.post('/todo', this.model)
+                    if(response.status ==200){
+                        this.getList()
+                    }
+                },
+                pleaseDelete: async function(dbID){
+                    var response = await axios.delete('/todo/'+dbID)
+                    if(response.status ==200){
+                        this.getList()
+                    }
+                },
+                updatedAt: async function(item) {
+                    var response =await axios.post('/todo/'+item._id,{isCompleted : item.isCompleted} )
+                    if(response.status ==200){
+                        this.getList()
+                    }
+                },
+                getList: async function(){
+                    var response= await axios.get('/todo')
+                    this.list=response.data;
+                    // console.log(JSON.strigify(this.list))
+                }
+            },
+            mounted: async function() {
+                this.getList()
+            }
+            
+        })
+    </script>
+</html>
